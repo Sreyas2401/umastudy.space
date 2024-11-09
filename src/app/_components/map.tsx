@@ -23,72 +23,36 @@ const BuildingMap = () => {
 
             map.current.on('load', () => {
                 // Add a highlight layer that uses the same source as your building-3d layer
+                
                 map.current!.addLayer({
-                    id: 'building-highlight-3d',
-                    type: 'fill-extrusion',
-                    source: 'openmaptiles',
+                    'id': 'building-highlight-3d',
+                    'source': 'openmaptiles',
                     'source-layer': 'building',
-                    minzoom: 14,
-                    paint: {
-                        'fill-extrusion-color': '#ff4444',
+                    'type': 'fill-extrusion',
+                    'minzoom': 14,
+                    'paint': {
+                      'fill-extrusion-color': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        '#ff4444',
+                        '#ddd'
+                      ],
                         'fill-extrusion-height': ['get', 'render_height'],
                         'fill-extrusion-base': ['get', 'render_min_height'],
-                        'fill-extrusion-opacity': 0.9
-                    },
-                    filter: ['==', ['get', 'id'], '']
-                });
-
-                // Handle clicks on study spaces
-                map.current!.on('click', 'studyspaces', (e) => {
-                    const feature = e.features?.[0];
-                    if (feature && feature.properties?.name) {
-                        const buildingName = feature?.properties?.name ?? 'Unknown Building';
-                        setSelectedBuilding(buildingName);
-                        
-                        // Get the building footprint at the clicked point
-                        const bbox: [[number, number], [number, number]] = [
-                            [e.point.x - 5, e.point.y - 5],
-                            [e.point.x + 5, e.point.y + 5]
-                        ];
-                        
-                        const buildingFeatures = map.current!.queryRenderedFeatures(bbox, {
-                            layers: ['building-3d']
-                        });
-
-                        if (buildingFeatures.length > 0) {
-                            // Highlight the building using its ID
-                            map.current!.setFilter('building-highlight-3d', [
-                                '==',
-                                ['get', 'id'],
-                                buildingFeatures[0]?.properties?.id ?? null
-                            ]);
-                        }
-                    } else {
-                        setSelectedBuilding(null);
-                        map.current!.setFilter('building-highlight-3d', ['==', ['get', 'id'], '']);
+                      'fill-extrusion-opacity': 1
                     }
-                });
-
-                // Handle clicks directly on buildings
+                  });
+                
                 map.current!.on('click', 'building-3d', (e) => {
                     if (e.features && e.features[0]) {
-                        const buildingId = e.features[0]?.properties?.id ?? null;
                         
                         // Find the corresponding study space
                         const point = e.point;
-                        const studyFeatures = map.current!.queryRenderedFeatures(point, {
-                            layers: ['studyspaces']
+                        const buildingFeatures = map.current!.queryRenderedFeatures(point, {
+                            layers: ['building-highlight-3d']
                         });
 
-                        if (studyFeatures.length > 0) {
-                            setSelectedBuilding(studyFeatures[0]!.properties?.name ?? 'Unknown Building');
-                        }
-
-                        map.current!.setFilter('building-highlight-3d', [
-                            '==',
-                            ['get', 'id'],
-                            buildingId
-                        ]);
+                        buildingFeatures.forEach(b => map.current!.setFeatureState({'sourceLayer': b.sourceLayer, 'id': b.id, 'source':b.source}, {'highlight': true}))
                     }
                 });
 
