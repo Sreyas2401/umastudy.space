@@ -14,7 +14,7 @@ const MainMap = () => {
                 pitch: 100,              
             }}
             style={{ width: '100%', height: '100vh' }}  // Full width and height
-            mapStyle="https://tiles.openfreemap.org/styles/liberty"
+            mapStyle="/custom_map.json"
         />
     );
 }
