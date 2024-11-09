@@ -2934,7 +2934,7 @@
         "icon-allow-overlap": false,
         "icon-ignore-placement": false,
         "icon-size": 1.5,
-        "icon-text-fit-padding": [10, 10, 10, 10],
+        "icon-text-fit-padding": [0, 0, 0, 0],
         "text-pitch-alignment": "auto",
         "text-rotation-alignment": "auto",
         "text-line-height": 4,

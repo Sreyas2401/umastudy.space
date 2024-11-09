@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 interface ControlPanelProps {
-    onResetView: () => void; // Function type: no arguments, no return value
+    onResetView: () => void; 
   }
 
 const ControlPanel = ({onResetView }: ControlPanelProps) => {
@@ -15,15 +15,14 @@ const ControlPanel = ({onResetView }: ControlPanelProps) => {
             top: '20px', 
             right: '20px', 
             zIndex: 10, 
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',  // Slightly opaque background for contrast
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',  
             padding: '20px', 
             borderRadius: '8px', 
-            width: '250px', // Fixed width for control box
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Optional: adds shadow to the box
+            width: '250px',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
         }}
         >
         <hr />
-        {/* Placeholder for search bar */}
         <input
             type="text"
             placeholder="Search Buildings"
