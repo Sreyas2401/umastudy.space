@@ -1,166 +1,119 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { useRef, useEffect } from 'react';
+import mapboxgl, {GeoJSONFeature, LngLatLike} from 'mapbox-gl';
 
-const BuildingMap = () => {
-    const mapContainer = useRef<HTMLDivElement | null>(null);
-    const map = useRef<maplibregl.Map | null>(null);
-    const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+const globalVar = {
+    origin: [-72.52819, 42.38977, 39],
+    center: {lng: -72.52819, lat: 42.38977} as LngLatLike,
+    zoom: 16.2,
+    pitch: 60,
+    bearing: 35
+  }
+
+function MainMap() {
+    const mapRef = useRef<mapboxgl.Map | null>(null);
+    const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        // Initialize map only if map.current is null (i.e., hasn't been initialized yet)
-        if (map.current === null && mapContainer.current !== null) {
-            map.current = new maplibregl.Map({
-                container: mapContainer.current,
-                style: '/custom_map.json', 
-                center: [-72.52819, 42.38977],
-                zoom: 16,
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2ZWxvcG1lbnQ0dSIsImEiOiJjamZkeGc3Y2M0OXc0MzNwZDl3enRpbzc3In0.S95dVrY6n-TxsdzqG4dvNg';
+
+        if (mapContainerRef.current) {
+            mapRef.current = new mapboxgl.Map({
+                container: mapContainerRef.current, 
+                style: 'mapbox://styles/mapbox/streets-v12', 
+                zoom: globalVar.zoom,
+                pitch: globalVar.pitch,
+                bearing: globalVar.bearing,
+                antialias: true, 
+                hash: true, 
+                center: globalVar.center
             });
 
-            map.current.on('load', () => {
-                map.current!.addSource('building-footprints', {
-                    type: 'geojson',
-                    data: {
-                        type: 'FeatureCollection',
-                        features: [
-                        {
-                            type: 'Feature',
-                            properties: {
-                            name: 'W.E.B. Du Bois Library',
-                            symbolId: '0',
-                            },
-                            geometry: {
-                            type: 'Polygon',
-                            coordinates: [
-                                [
-                                    [
-                                        -72.52864085880019,
-                                        42.390004269052525
-                                    ],
-                                    [
-                                        -72.52830901773197,
-                                        42.38919493341976
-                                    ],
-                                    [
-                                        -72.52767388998264,
-                                        42.389341840221306
-                                    ],
-                                    [
-                                        -72.52796152483289,
-                                        42.39016707743667
-                                    ],
-                                    [
-                                        -72.52864085880019,
-                                        42.390004269052525
-                                    ]
-                                ],
+            const map = mapRef.current;
+
+            map.on('style.load', () => {
+                if(map.getSource('composite')){
+                    map.addLayer({
+                        'id': '3d-buildings',
+                        'source': 'composite',
+                        'source-layer': 'building',
+                        'type': 'fill-extrusion',
+                        'minzoom': 14,
+                        'paint': {
+                            'fill-extrusion-color': [
+                                'case',
+                                ['boolean', ['feature-state', 'hover'], false],
+                                '#ff0000',
+                                '#ddd'
                             ],
-                            },
-                        },
-                        // Additional building footprints can be added here
-                        ],
-                    },
-                });
-
-            map.current!.addLayer({
-                id: 'building-outlines',
-                type: 'line',
-                source: 'building-footprints',
-                minzoom: 15,
-                paint: {
-                    'line-color': '#666',
-                    'line-width': 1,
-                    'line-opacity': 0.5,
-                },
-            },
-                'studyspaces'
-            );
-
-            map.current!.addLayer({
-                id: 'building-highlight',
-                type: 'line',
-                source: 'building-footprints',
-                minzoom: 15,
-                paint: {
-                    'line-color': '#ff0000',
-                    'line-width': 3,
-                    'line-opacity': 0.8,
-                },
-                filter: ['==', 'name', ''],
-            },
-            'studyspaces'
-            );
-
-            map.current!.on('click', 'studyspaces', (e) => {
-                const feature = e.features?.[0];
-                if (feature && feature.properties?.name) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    const buildingName = feature.properties.name;
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    setSelectedBuilding(buildingName);
-                
-                    map.current!.setFilter('building-highlight', [
-                    '==',
-                    'name',
-                    buildingName,
-                    ]);
-                } else {
-                    setSelectedBuilding('Unknown Building');
-                    map.current!.setFilter('building-highlight', ['==', 'name', '']);
+                            'fill-extrusion-height': ["number", ["get", "height"], 5],
+                            'fill-extrusion-base': ["number", ["get", "min_height"], 0],
+                            'fill-extrusion-opacity': 1
+                        }
+                    }, 'road-label')
                 }
+
+                let fClick: GeoJSONFeature | null = null;
+
+                map.on('click', (e) => {
+                    let features = map.queryRenderedFeatures(e.point, {
+                        layers: ['3d-buildings']
+                    });
+
+                    if(features[0]){
+                        deselectBuilding();
+                        selectBuilding(features[0]);
+                    }else{
+                        deselectBuilding();
+                    }
                 });
 
-            map.current!.on('click', 'building-outlines', (e) => {
-                const feature = e.features?.[0];
-                if (feature && feature.properties?.name) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    const buildingName = feature.properties?.name ?? 'Unknown Building';
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    setSelectedBuilding(buildingName);
-                    
-                    map.current!.setFilter('building-highlight', [
-                    '==',
-                    'name',
-                    buildingName,
-                    ]);
+                const deselectBuilding = () => {
+                    if (!fClick || fClick.id === undefined) return;
+                    map.getCanvasContainer().style.cursor = 'default';
+                    map.setFeatureState({
+                        source: fClick.source,
+                        sourceLayer: fClick.sourceLayer,
+                        id: fClick.id
+                    }, {
+                        hover: false
+                    });
+                };
+
+                const selectBuilding = (feature: GeoJSONFeature) => {
+                    fClick = feature;
+                    if (fClick.id === undefined) return;
+                    map.getCanvasContainer().style.cursor = 'pointer';
+
+                    map.setFeatureState({
+                    source: fClick.source,
+                    sourceLayer: fClick.sourceLayer,
+                    id: fClick.id
+                    }, {
+                    hover: true
+                    });
                 }
             });
 
-            ['studyspaces', 'building-outlines'].forEach((layerId) => {
-                map.current!.on('mouseenter', layerId, () => {
-                    map.current!.getCanvas().style.cursor = 'pointer';
-                });
-
-                map.current!.on('mouseleave', layerId, () => {
-                    map.current!.getCanvas().style.cursor = '';
-                });
-                });
-            });
         }
 
-        
 
-        return () => {
-            if (map.current) {
-                map.current.remove();
-                map.current = null;
-            }
-        };
+
+    return () => {
+        if (mapRef.current) {
+            mapRef.current.remove();
+        }
+    };
     }, []);
 
     return (
-        <div className="w-full h-screen relative">
-        <div ref={mapContainer} className="w-full h-full" />
-        {selectedBuilding && (
-            <div className="absolute top-4 left-4 bg-white p-4 rounded shadow">
-            <h3 className="font-medium">Selected Building:</h3>
-            <p>{selectedBuilding}</p>
-            </div>
-        )}
-        </div>
+        <>
+            <div id='map-container' ref={mapContainerRef} style={{ height: '100vh', width: '100%' }} />
+        </>
     );
-};
+}
 
-export default BuildingMap;
+export default MainMap;
