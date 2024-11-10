@@ -53,6 +53,7 @@ export const BLDG_CODES = [
   "ISB",
   "GOES",
   "FLIN",
+  "DRA",
 ] as const;
 
 export const BLDG_NAMES: Record<(typeof BLDG_CODES)[number], string> = {
@@ -110,6 +111,7 @@ export const BLDG_NAMES: Record<(typeof BLDG_CODES)[number], string> = {
   ISB: "Integrated Sciences Building",
   GOES: "Goessmann Laboratory",
   FLIN: "Flint Laboratory",
+  DRA: "Draper Hall"
 };
 
 export const BLDG_IDS: Record<(typeof BLDG_CODES)[number], string[]> = {
@@ -166,7 +168,8 @@ export const BLDG_IDS: Record<(typeof BLDG_CODES)[number], string[]> = {
   GORM: ["217243049"],
   NAH: ["217242975"],
   SKIN: ["217243924"],
-  STK: ["147156749"]
+  STK: ["147156749"],
+  DRA: ["147156707", "147156736"]
 };
 
 export const BLDG_PARTS = Object.keys(BLDG_IDS).reduce(

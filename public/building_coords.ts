@@ -1,10 +1,10 @@
-{
+const BUILD_COORDS = {
   "type": "FeatureCollection",
   "features": [
     {
       "type": "Feature",
       "properties": {
-        "name": "W.E.B. Du Bois Library"
+        "name": "W.E.B. Dubois Library"
       },
       "geometry": {
         "coordinates": [
@@ -516,3 +516,5 @@
     }
   ]
 }
+
+export default BUILD_COORDS;

@@ -1,6 +1,7 @@
 import { useRef, useCallback, useState } from "react";
 import { type GeoJSONFeature } from "mapbox-gl";
-import { BLDG_PARTS, BLDG_IDS } from "../utils/buildingMap";
+import { BLDG_PARTS, BLDG_IDS, REVERSED_BLDG_NAMES } from "../utils/buildingMap";
+import BUILD_COORDS from "../../../public/building_coords";
 
 export const useBuildingSelection = (
   mapRef: React.MutableRefObject<mapboxgl.Map | null>,
@@ -11,7 +12,6 @@ export const useBuildingSelection = (
   const deselectCurrentBuilding = useCallback(() => {
     const map = mapRef.current;
     const currentFeature = selectedFeatureRef.current;
-    console.log(currentFeature);
 
     if (!map || currentFeature?.id === undefined) return;
 
@@ -48,12 +48,13 @@ export const useBuildingSelection = (
       const map = mapRef.current;
       if (!map || feature.id === undefined) return;
 
+
       // Deselect current building if any
       deselectCurrentBuilding();
 
       // Update the selected feature reference
       selectedFeatureRef.current = feature;
-      console.log([feature.source, feature.sourceLayer, feature.id]);
+      console.log(feature);
 
       const res = BLDG_PARTS[feature.id];
 
@@ -70,26 +71,16 @@ export const useBuildingSelection = (
             { hover: true },
           ),
         );
-      } else {
-        map.setFeatureState(
-          {
-            source: feature.source,
-            sourceLayer: feature.sourceLayer,
-            id: feature.id,
-          },
-          { hover: true },
-        );
       }
     },
     [deselectCurrentBuilding, mapRef],
   );
 
-  // Helper function to select building by ID (useful for search)
   const selectBuildingById = useCallback(
     (buildingId: string) => {
       const map = mapRef.current;
       if (!map) return;
-
+  
       const feature: GeoJSONFeature = {
         id: buildingId,
         type: "Feature",
@@ -98,11 +89,13 @@ export const useBuildingSelection = (
         source: "composite",
         sourceLayer: "building",
       };
-
+  
       selectBuilding(feature);
+
     },
-    [selectBuilding, mapRef],
+    [selectBuilding, mapRef]
   );
+  
 
   return {
     selectBuilding,

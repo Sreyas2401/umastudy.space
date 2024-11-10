@@ -56,6 +56,7 @@ export const BLDG_CODES = [
   "ISB",
   "GOES",
   "FLIN",
+  "DRA"
 ] as const;
 
 export const BLDG_NAMES: Record<(typeof BLDG_CODES)[number], string> = {
@@ -113,4 +114,5 @@ export const BLDG_NAMES: Record<(typeof BLDG_CODES)[number], string> = {
   ISB: "Integrated Sciences Building",
   GOES: "Goessmann Laboratory",
   FLIN: "Flint Laboratory",
+  DRA: "Draper Hall"
 };

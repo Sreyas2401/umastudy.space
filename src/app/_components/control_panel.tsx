@@ -15,7 +15,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 }) => {
 
     useEffect(() => {
-        console.log(inputText);
         onDeselectBuilding();
         const abbr = REVERSED_BLDG_NAMES[inputText]!;
         const id = BLDG_IDS[abbr];
