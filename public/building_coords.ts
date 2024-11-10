@@ -18,19 +18,6 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Student Union"
-      },
-      "geometry": {
-        "coordinates": [
-          -72.5277250757254,
-          42.39094346599376
-        ],
-        "type": "Point"
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
         "name": "South College"
       },
       "geometry": {
@@ -84,7 +71,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Morrill III"
+        "name": "Morrill Science Center (Bldg III)"
       },
       "geometry": {
         "coordinates": [
@@ -97,7 +84,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Morrill IV"
+        "name": "Morrill Science Center (Bldg IV)"
       },
       "geometry": {
         "coordinates": [
@@ -111,7 +98,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Morril I"
+        "name": "Morrill Science Center (Bldg I)"
       },
       "geometry": {
         "coordinates": [
@@ -125,7 +112,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Morril II"
+        "name": "Morrill Science Center (Bldg II)"
       },
       "geometry": {
         "coordinates": [
@@ -153,7 +140,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Hasbrouck Laboratory"
+        "name": "Hasbrouck Lab"
       },
       "geometry": {
         "coordinates": [
@@ -167,7 +154,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Goessman"
+        "name": "Goessmann Lab"
       },
       "geometry": {
         "coordinates": [
@@ -177,20 +164,6 @@ const BUILD_COORDS = {
         "type": "Point"
       },
       "id": 12
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Physical Sciences Building"
-      },
-      "geometry": {
-        "coordinates": [
-          -72.52666425787777,
-          42.39368447013487
-        ],
-        "type": "Point"
-      },
-      "id": 13
     },
     {
       "type": "Feature",
@@ -237,7 +210,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Isenberg School of Management"
+        "name": "School of Management"
       },
       "geometry": {
         "coordinates": [
@@ -251,7 +224,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Mahar Auditorium"
+        "name": "Mahar"
       },
       "geometry": {
         "coordinates": [
@@ -265,7 +238,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Studio Arts Building"
+        "name": "Studio Arts"
       },
       "geometry": {
         "coordinates": [
@@ -279,7 +252,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "John W. Oliver Design Building"
+        "name": "John Olver Design Building"
       },
       "geometry": {
         "coordinates": [
@@ -307,7 +280,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Life Sciences Laboratories"
+        "name": "Life Sciences Laboratory"
       },
       "geometry": {
         "coordinates": [
@@ -321,7 +294,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Integrated Science Building"
+        "name": "Integrated Sciences Building"
       },
       "geometry": {
         "coordinates": [
@@ -331,20 +304,6 @@ const BUILD_COORDS = {
         "type": "Point"
       },
       "id": 23
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "name": "Knowles Engineering Building"
-      },
-      "geometry": {
-        "coordinates": [
-          -72.528779182164,
-          42.39326479631558
-        ],
-        "type": "Point"
-      },
-      "id": 24
     },
     {
       "type": "Feature",
@@ -391,7 +350,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Engineering Laboratory I"
+        "name": "Engineering Laboratory"
       },
       "geometry": {
         "coordinates": [
@@ -405,7 +364,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Engineering Laboratory II"
+        "name": "Engineering Lab II"
       },
       "geometry": {
         "coordinates": [
@@ -419,7 +378,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Computer Science Lab"
+        "name": "Computer Science Building"
       },
       "geometry": {
         "coordinates": [
@@ -433,7 +392,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Agricultural Engineering South"
+        "name": "Ag. Engin. Farm Srvc Bldg"
       },
       "geometry": {
         "coordinates": [
@@ -447,7 +406,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Agricultural Engineering Center"
+        "name": "Ag. Engin. Farm Srvc Bldg"
       },
       "geometry": {
         "coordinates": [
@@ -461,7 +420,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Agricultural Engineering North"
+        "name": "Ag. Engin. Farm Srvc Bldg"
       },
       "geometry": {
         "coordinates": [
@@ -489,7 +448,7 @@ const BUILD_COORDS = {
     {
       "type": "Feature",
       "properties": {
-        "name": "Flint Lab"
+        "name": "Flint Laboratory"
       },
       "geometry": {
         "coordinates": [

@@ -3,7 +3,6 @@
 import { useRef, useEffect, useState } from "react";
 import mapboxgl, { type LngLatLike } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import ControlPanel from "./control_panel";
 import { useBuildingSelection } from "./buildhooks";
 import { useParams, useRouter } from "next/navigation";
 import { BLDG_IDS } from "../utils/buildingMap";
@@ -116,10 +115,6 @@ function MainMap() {
         id="map-container"
         ref={mapContainerRef}
         style={{ height: "100vh", width: "100%" }}
-      />
-      <ControlPanel
-        onSelectBuilding={selectBuildingById}
-        onDeselectBuilding={deselectBuilding}
       />
     </div>
   );
