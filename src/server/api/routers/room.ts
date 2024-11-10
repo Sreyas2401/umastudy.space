@@ -3,6 +3,7 @@ import { createTRPCRouter, publicProcedure } from "../trpc";
 import { and, eq, getTableColumns, sql } from "drizzle-orm";
 import { eventRooms, events, rooms } from "~/server/db/schema";
 import { addDays, addMinutes, subMinutes } from "date-fns";
+import { BLDG_CODES } from "~/app/utils/buildingMap";
 
 export const roomRouter = createTRPCRouter({
   getRoomsForBuilding: publicProcedure
@@ -49,10 +50,16 @@ export const roomRouter = createTRPCRouter({
       return bldgRooms;
     }),
   getUpcomingEventsForRoom: publicProcedure
-    .input(z.object({ building: z.string(), room: z.string() }))
+    .input(
+      z.object({
+        building: z.string(),
+        room: z.string(),
+        from: z.string().datetime(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
-      const now = new Date();
-      const before = addDays(now, 1);
+      const now = input.from ? new Date(input.from) : new Date();
+      const until = addDays(now, 1);
 
       const upcomingRoomEvents = await ctx.db
         .select({ ...getTableColumns(events) })
@@ -61,11 +68,9 @@ export const roomRouter = createTRPCRouter({
         .where(
           sql`${eventRooms.building} = ${input.building} 
           and ${eventRooms.roomId} = ${input.room}
-          and ((${events.startsAt} between ${now.toISOString()} and ${before.toISOString()})
-           or (${events.endsAt} between ${now.toISOString()} and ${before.toISOString()}))`,
+          and ((${events.startsAt} between ${now.toISOString()} and ${until.toISOString()})
+           or (${events.endsAt} between ${now.toISOString()} and ${until.toISOString()}))`,
         );
-
-      console.log(upcomingRoomEvents);
 
       return upcomingRoomEvents;
     }),
@@ -91,6 +96,8 @@ export const roomRouter = createTRPCRouter({
         .groupBy(rooms.building, rooms.id)
         .having(() => sql`count(${unavailableRooms.events.id}) = 0`);
 
-      return availableRooms;
+      return availableRooms.filter((r) =>
+        BLDG_CODES.includes(r.building as (typeof BLDG_CODES)[number]),
+      );
     }),
 });

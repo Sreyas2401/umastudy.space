@@ -13,13 +13,13 @@ import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 function MainNav({ pathname }: { pathname: string }) {
   return (
     <nav className="flex h-full w-full columns-2 justify-center gap-6">
-      <Tabs defaultValue="buildings" value={pathname.slice(1)}>
+      <Tabs defaultValue="rooms" value={pathname.slice(1)}>
         <TabsList>
+          <TabsTrigger value="rooms">
+            <Link href="/rooms">Available Rooms</Link>
+          </TabsTrigger>
           <TabsTrigger value="buildings">
             <Link href="/buildings">Buildings</Link>
-          </TabsTrigger>
-          <TabsTrigger value="rooms">
-            <Link href="/rooms">Rooms</Link>
           </TabsTrigger>
         </TabsList>
       </Tabs>

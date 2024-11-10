@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function AvailableRoom({
   building,
   room,
@@ -6,8 +8,8 @@ export default function AvailableRoom({
   room: string;
 }) {
   return (
-    <div>
-      {building} - {room}
-    </div>
+    <Link href={`/buildings/${building}/rooms/${room}/schedule`}>
+      <div className="text-center hover:bg-gray-200">Room {room}</div>
+    </Link>
   );
 }

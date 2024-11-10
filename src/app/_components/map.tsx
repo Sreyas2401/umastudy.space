@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import mapboxgl, { type LngLatLike } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { useBuildingSelection } from "./buildhooks";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { BLDG_IDS } from "../utils/buildingMap";
 
 const globalVar = {
@@ -18,6 +18,7 @@ const globalVar = {
 function MainMap() {
   const params = useParams();
   const router = useRouter();
+  const pathname = usePathname();
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -27,6 +28,7 @@ function MainMap() {
     selectBuildingById,
     selectedBuilding,
   } = useBuildingSelection(mapRef);
+  const previousBuildingRef = useRef("");
 
   useEffect(() => {
     mapboxgl.accessToken =
@@ -104,10 +106,27 @@ function MainMap() {
   }, [params, selectBuildingById, mapLoaded]);
 
   useEffect(() => {
-    if (selectedBuilding) {
-      router.push(`/buildings/${selectedBuilding}`);
+    if (
+      !params.bldg &&
+      !params.roomId &&
+      selectedBuilding === previousBuildingRef.current
+    ) {
+      console.log("1");
+      return;
     }
-  }, [selectedBuilding, router]);
+
+    if (
+      selectedBuilding &&
+      previousBuildingRef.current !== selectedBuilding
+      //  &&
+      // params.bldg !== selectedBuilding &&
+      // params.bldg !== previousBuildingRef.current
+    ) {
+      console.log("2");
+      router.push(`/buildings/${selectedBuilding}`);
+      previousBuildingRef.current = selectedBuilding;
+    }
+  }, [selectedBuilding, router, params, pathname]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100vh" }}>

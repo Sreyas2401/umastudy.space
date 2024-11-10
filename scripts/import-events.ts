@@ -1,10 +1,11 @@
-import { addDays, format, startOfWeek } from "date-fns";
+import { addDays, addHours, format, startOfWeek } from "date-fns";
 import { BLDG_CODES, LIVE_API_URL } from "./common";
 import { db } from "~/server/db";
 import {
   eventRooms as eventRoomsTable,
   events as eventsTable,
 } from "~/server/db/schema";
+import { fromZonedTime } from "date-fns-tz";
 import path from "path";
 import { file } from "bun";
 
@@ -203,9 +204,10 @@ async function importEvents() {
       const reservation: typeof eventsTable.$inferInsert = {
         liveEventId: rsv.event_id,
         name: rsv.event_name,
-        startsAt: new Date(rsv.rsrv_start_dt),
-        endsAt: new Date(rsv.rsrv_end_dt),
+        startsAt: addHours(fromZonedTime(rsv.rsrv_start_dt, "America/New_York"), 3),
+        endsAt: addHours(fromZonedTime(rsv.rsrv_end_dt, "America/New_York"), 3),
       };
+     
 
       return reservation;
     })

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { events, eventRooms } from "~/server/db/schema";
 import { eq, getTableColumns, sql } from "drizzle-orm";
+import { BLDG_CODES } from "~/app/utils/buildingMap";
 
 export const buildingRouter = createTRPCRouter({
   getBuildings: publicProcedure.query(async ({ ctx }) => {
@@ -9,7 +10,9 @@ export const buildingRouter = createTRPCRouter({
       limit: 100,
     });
 
-    return buildings;
+    return buildings.filter((b) =>
+      BLDG_CODES.includes(b.id as (typeof BLDG_CODES)[number]),
+    );
   }),
   getUpcomingEventsForBuilding: publicProcedure
     .input(z.string())
