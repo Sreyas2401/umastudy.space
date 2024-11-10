@@ -102,7 +102,6 @@ export const useBuildingSelection = (
       )?.geometry.coordinates;
 
       if(cur_coords!=undefined){
-        console.log(ff+':'+cur_coords);
         onSelectCity({latitude: cur_coords[1]!, longitude: cur_coords[0]!});
       }
 
