@@ -8,5 +8,5 @@ export default {
   dbCredentials: {
     url: env.DATABASE_URL,
   },
-  tablesFilter: ["umastudy.space_*"],
+  tablesFilter: ["umastudy_*"],
 } satisfies Config;

@@ -39,6 +39,12 @@ export type RouterOutputs = inferRouterOutputs<AppRouter>;
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
+  // queryClient.setDefaultOptions({
+  //   queries: {
+  //     staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  //   },
+  // });
+
   const [trpcClient] = useState(() =>
     api.createClient({
       links: [
@@ -57,7 +63,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           },
         }),
       ],
-    })
+    }),
   );
 
   return (

@@ -1,11 +1,13 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  foreignKey,
   index,
   integer,
   pgTableCreator,
   primaryKey,
   text,
   timestamp,
+  unique,
   varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
@@ -16,28 +18,72 @@ import { type AdapterAccount } from "next-auth/adapters";
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const createTable = pgTableCreator((name) => `umastudy.space_${name}`);
+export const createTable = pgTableCreator((name) => `umastudy_${name}`);
 
-export const posts = createTable(
-  "post",
+export const buildings = createTable("buildings", {
+  id: varchar("id", { length: 5 }).primaryKey(),
+  name: text("name").notNull(),
+});
+
+export const rooms = createTable(
+  "rooms",
+  {
+    id: varchar("id", { length: 16 }).notNull(),
+    building: varchar("building", { length: 8 })
+      .notNull()
+      .references(() => buildings.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.building, table.id] })],
+);
+
+export const events = createTable(
+  "events",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("created_by", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
-    ),
+    liveEventId: integer("live_event_id").notNull(),
+    name: text("name").notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+    endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
   },
-  (example) => ({
-    createdByIdIdx: index("created_by_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  })
+  (table) => [
+    unique("live_event_id_starts_unique").on(table.liveEventId, table.startsAt),
+    index("live_event_id").on(table.liveEventId),
+    index("starts_at_idx").on(table.startsAt),
+    index("ends_at_idx").on(table.endsAt),
+  ],
 );
+
+export const eventRooms = createTable(
+  "event_rooms",
+  {
+    eventId: integer("event_id")
+      .notNull()
+      .references(() => events.id, { onDelete: "cascade" }),
+    building: varchar("building", { length: 8 }).notNull(),
+    roomId: varchar("room_id", { length: 16 }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.eventId, table.roomId] }),
+    foreignKey({
+      columns: [table.building, table.roomId],
+      foreignColumns: [rooms.building, rooms.id],
+    }).onDelete("cascade"),
+    index("event_id_idx").on(table.eventId),
+    index("room_id_idx").on(table.roomId),
+  ],
+);
+
+export const eventRelations = relations(events, ({ many }) => ({
+  rooms: many(rooms),
+}));
+
+export const roomRelations = relations(rooms, ({ many }) => ({
+  events: many(events),
+}));
+
+/**
+ * USER/AUTH STUFF
+ */
 
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })
@@ -83,7 +129,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_user_id_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -106,7 +152,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_user_id_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -125,5 +171,5 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );

@@ -4,6 +4,17 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import React, { Suspense } from "react";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarProvider,
+  SidebarTrigger,
+} from "~/components/ui/sidebar";
+import DashboardRoutes from "./_components/DashboardRoutes";
+import { Separator } from "~/components/ui/separator";
+import { Skeleton } from "~/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -11,13 +22,43 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
+{
+  /* <div className="flex h-screen flex-row">
+            <div className="basis-1/3">{dashboard}</div>
+            <div className="basis-2/3">{children}</div>
+          </div> */
+}
+
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  dashboard,
+}: Readonly<{ children: React.ReactNode; dashboard: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
+    <html
+      lang="en"
+      className={`${GeistSans.variable}`}
+      suppressHydrationWarning
+    >
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <div className="flex flex-row overscroll-y-none">
+            <SidebarProvider>
+              <Sidebar variant="inset" className="">
+                <SidebarHeader>
+                  <DashboardRoutes></DashboardRoutes>
+                  <Separator />
+                </SidebarHeader>
+                <SidebarContent>
+                  {dashboard}
+                </SidebarContent>
+              </Sidebar>
+              <main className="h-screen w-screen">
+                {/* <SidebarTrigger /> */}
+                {children}
+              </main>
+            </SidebarProvider>
+          </div>
+        </TRPCReactProvider>
       </body>
     </html>
   );
