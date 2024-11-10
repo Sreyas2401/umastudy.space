@@ -1,12 +1,13 @@
 "use client";
 
+import { useState } from 'react';
 import * as React from 'react';
 
-interface ControlPanelProps {
-    onResetView: () => void; 
-  }
 
-const ControlPanel = ({onResetView }: ControlPanelProps) => {
+const ControlPanel = () => {
+
+    const [buildingName, setBuildingName] = useState();
+    
     return (
         <div 
         className="control-panel" 
@@ -34,21 +35,7 @@ const ControlPanel = ({onResetView }: ControlPanelProps) => {
             marginBottom: '10px'
             }}
         />
-        <button 
-                onClick={onResetView} 
-                style={{
-                    top: '20px', 
-                    left: '20px', 
-                    padding: '10px 20px', 
-                    backgroundColor: '#007BFF', 
-                    color: '#fff', 
-                    border: 'none', 
-                    borderRadius: '5px', 
-                    cursor: 'pointer'
-                }}
-            >
-                Go to Campus
-        </button>
+        
         </div>
     );
     }

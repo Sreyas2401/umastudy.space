@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import mapboxgl, {GeoJSONFeature, LngLatLike} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import ControlPanel from './control_panel';
 
 const globalVar = {
     origin: [-72.52819, 42.38977, 39],
@@ -110,8 +111,6 @@ function MainMap() {
 
         }
 
-
-
     return () => {
         if (mapRef.current) {
             mapRef.current.remove();
@@ -120,9 +119,10 @@ function MainMap() {
     }, []);
 
     return (
-        <>
+        <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
             <div id='map-container' ref={mapContainerRef} style={{ height: '100vh', width: '100%' }} />
-        </>
+            <ControlPanel/>
+        </div>
     );
 }
 
