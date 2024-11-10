@@ -1,87 +1,114 @@
-import { useRef, useCallback } from 'react';
-import { GeoJSONFeature } from 'mapbox-gl';
-import { BLDG_PARTS, BLDG_IDS } from '../utils/buildingMap';
+import { useRef, useCallback, useState } from "react";
+import { type GeoJSONFeature } from "mapbox-gl";
+import { BLDG_PARTS, BLDG_IDS } from "../utils/buildingMap";
 
-export const useBuildingSelection = (mapRef: React.MutableRefObject<mapboxgl.Map | null>) => {
-    const selectedFeatureRef = useRef<GeoJSONFeature | null>(null);
+export const useBuildingSelection = (
+  mapRef: React.MutableRefObject<mapboxgl.Map | null>,
+) => {
+  const selectedFeatureRef = useRef<GeoJSONFeature | null>(null);
+  const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
 
-    const deselectCurrentBuilding = useCallback(() => {
-        const map = mapRef.current;
-        const currentFeature = selectedFeatureRef.current;
-        console.log(currentFeature);
+  const deselectCurrentBuilding = useCallback(() => {
+    const map = mapRef.current;
+    const currentFeature = selectedFeatureRef.current;
+    console.log(currentFeature);
 
-        if (!map || !currentFeature || currentFeature.id === undefined) return;
+    if (!map || currentFeature?.id === undefined) return;
 
-        const res = BLDG_PARTS[currentFeature.id];
+    const res = BLDG_PARTS[currentFeature.id];
 
-        if (res && currentFeature.source) {
-            const other_ids = BLDG_IDS[res];
-            other_ids.forEach(cur_id => map.setFeatureState({
-                id: cur_id,
-                source: currentFeature.source,
-                sourceLayer: currentFeature.sourceLayer
-            }, { hover: false }));
-        } else {
-            map.setFeatureState({
-                source: currentFeature.source,
-                sourceLayer: currentFeature.sourceLayer,
-                id: currentFeature.id
-            }, { hover: false });
-        }
+    if (res && currentFeature.source) {
+      const other_ids = BLDG_IDS[res];
+      other_ids.forEach((cur_id) =>
+        map.setFeatureState(
+          {
+            id: cur_id,
+            source: currentFeature.source,
+            sourceLayer: currentFeature.sourceLayer,
+          },
+          { hover: false },
+        ),
+      );
+    } else {
+      map.setFeatureState(
+        {
+          source: currentFeature.source,
+          sourceLayer: currentFeature.sourceLayer,
+          id: currentFeature.id,
+        },
+        { hover: false },
+      );
+    }
 
-        selectedFeatureRef.current = null;
-    }, []);
+    selectedFeatureRef.current = null;
+  }, [mapRef]);
 
-    const selectBuilding = useCallback((feature: GeoJSONFeature) => {
-        const map = mapRef.current;
-        if (!map || feature.id === undefined) return;
+  const selectBuilding = useCallback(
+    (feature: GeoJSONFeature) => {
+      const map = mapRef.current;
+      if (!map || feature.id === undefined) return;
 
-        // Deselect current building if any
-        deselectCurrentBuilding();
+      // Deselect current building if any
+      deselectCurrentBuilding();
 
-        // Update the selected feature reference
-        selectedFeatureRef.current = feature;
-        console.log([feature.source, feature.sourceLayer, feature.id]);
+      // Update the selected feature reference
+      selectedFeatureRef.current = feature;
+      console.log([feature.source, feature.sourceLayer, feature.id]);
 
-        const res = BLDG_PARTS[feature.id];
+      const res = BLDG_PARTS[feature.id];
 
-        if (res && feature.source) {
-            const other_ids = BLDG_IDS[res];
-            other_ids.forEach(cur_id => map.setFeatureState({
-                id: cur_id,
-                source: feature.source,
-                sourceLayer: feature.sourceLayer
-            }, { hover: true }));
-        } else {
-            map.setFeatureState({
-                source: feature.source,
-                sourceLayer: feature.sourceLayer,
-                id: feature.id
-            }, { hover: true });
-        }
-    }, [deselectCurrentBuilding]);
+      if (res && feature.source) {
+        setSelectedBuilding(res);
+        const other_ids = BLDG_IDS[res];
+        other_ids.forEach((cur_id) =>
+          map.setFeatureState(
+            {
+              id: cur_id,
+              source: feature.source,
+              sourceLayer: feature.sourceLayer,
+            },
+            { hover: true },
+          ),
+        );
+      } else {
+        map.setFeatureState(
+          {
+            source: feature.source,
+            sourceLayer: feature.sourceLayer,
+            id: feature.id,
+          },
+          { hover: true },
+        );
+      }
+    },
+    [deselectCurrentBuilding, mapRef],
+  );
 
-    // Helper function to select building by ID (useful for search)
-    const selectBuildingById = useCallback((buildingId: string) => {
-        const map = mapRef.current;
-        if (!map) return;
+  // Helper function to select building by ID (useful for search)
+  const selectBuildingById = useCallback(
+    (buildingId: string) => {
+      const map = mapRef.current;
+      if (!map) return;
 
-        const feature: GeoJSONFeature = {
-            id: buildingId,
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [0, 0] },
-            properties: {},
-            source: 'composite',
-            sourceLayer: 'building'
-        };
+      const feature: GeoJSONFeature = {
+        id: buildingId,
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [0, 0] },
+        properties: {},
+        source: "composite",
+        sourceLayer: "building",
+      };
 
-        selectBuilding(feature);
-    }, [selectBuilding]);
+      selectBuilding(feature);
+    },
+    [selectBuilding, mapRef],
+  );
 
-    return {
-        selectBuilding,
-        deselectBuilding: deselectCurrentBuilding,
-        selectBuildingById,
-        currentSelectedFeature: selectedFeatureRef.current
-    };
+  return {
+    selectBuilding,
+    deselectBuilding: deselectCurrentBuilding,
+    selectBuildingById,
+    currentSelectedFeature: selectedFeatureRef.current,
+    selectedBuilding,
+  };
 };

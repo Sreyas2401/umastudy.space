@@ -189,7 +189,7 @@ export const BLDG_IDS: Record<(typeof BLDG_CODES)[number], string[]> = {
 
 export const BLDG_PARTS = Object.keys(BLDG_IDS).reduce(
   (acc, bldg) => {
-    BLDG_IDS[bldg as keyof typeof BLDG_IDS]!.forEach((id) => (acc[id] = bldg as (typeof BLDG_CODES)[number]));
+    BLDG_IDS[bldg as keyof typeof BLDG_IDS].forEach((id) => (acc[id] = bldg as (typeof BLDG_CODES)[number]));
 
     return acc;
   },
@@ -199,5 +199,3 @@ export const BLDG_PARTS = Object.keys(BLDG_IDS).reduce(
 export const REVERSED_BLDG_NAMES: Record<string, (typeof BLDG_CODES)[number]> = Object.fromEntries(
   Object.entries(BLDG_NAMES).map(([code, name]) => [name, code])
 ) as Record<string, (typeof BLDG_CODES)[number]>;
-
-

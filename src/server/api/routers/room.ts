@@ -1,30 +1,73 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import { eq, getTableColumns, sql } from "drizzle-orm";
+import { and, eq, getTableColumns, sql } from "drizzle-orm";
 import { eventRooms, events, rooms } from "~/server/db/schema";
+import { addDays, addMinutes, subMinutes } from "date-fns";
 
 export const roomRouter = createTRPCRouter({
   getRoomsForBuilding: publicProcedure
     .input(z.string())
     .query(async ({ ctx, input }) => {
-      const rooms = await ctx.db.query.rooms.findMany({
-        where: (rooms, { eq }) => eq(rooms.building, input),
-      });
+      const now = new Date();
 
-      return rooms;
+      const sq = ctx.db
+        .select({
+          roomId: eventRooms.roomId,
+          building: eventRooms.building,
+          availability: sql<"Available" | "Unavailable">`CASE 
+            WHEN COUNT(${events.id}) > 0 THEN 'Unavailable' 
+            ELSE 'Available' 
+          END`.as("availability"),
+        })
+        .from(eventRooms)
+        .innerJoin(
+          events,
+          and(
+            eq(eventRooms.eventId, events.id),
+            sql`${events.startsAt} < ${addMinutes(now, 30).toISOString()} and ${events.endsAt} > ${subMinutes(now, 15).toISOString()}`,
+          ),
+        )
+        .where(eq(eventRooms.building, input))
+        .groupBy(eventRooms.roomId, eventRooms.building)
+        .as("room_occupation");
+
+      const bldgRooms = await ctx.db
+        .select({
+          ...getTableColumns(rooms),
+          available: sql<
+            "Available" | "Unavailable"
+          >`COALESCE(${sq.availability}, 'Available')`,
+        })
+        .from(rooms)
+        .leftJoin(
+          sq,
+          and(eq(rooms.id, sq.roomId), eq(rooms.building, sq.building)),
+        )
+        .where(eq(rooms.building, input))
+        .orderBy(rooms.id);
+
+      return bldgRooms;
     }),
   getUpcomingEventsForRoom: publicProcedure
     .input(z.object({ building: z.string(), room: z.string() }))
     .query(async ({ ctx, input }) => {
-      const roomEvents = await ctx.db
+      const now = new Date();
+      const before = addDays(now, 1);
+
+      const upcomingRoomEvents = await ctx.db
         .select({ ...getTableColumns(events) })
         .from(events)
         .innerJoin(eventRooms, eq(events.id, eventRooms.eventId))
         .where(
-          sql`${eventRooms.building} = ${input.building} and ${eventRooms.roomId} = ${input.room} and ${events.startsAt} > ${new Date()}`,
+          sql`${eventRooms.building} = ${input.building} 
+          and ${eventRooms.roomId} = ${input.room}
+          and ((${events.startsAt} between ${now.toISOString()} and ${before.toISOString()})
+           or (${events.endsAt} between ${now.toISOString()} and ${before.toISOString()}))`,
         );
 
-      return roomEvents;
+      console.log(upcomingRoomEvents);
+
+      return upcomingRoomEvents;
     }),
   getAvailableRooms: publicProcedure
     .input(z.object({ from: z.string().datetime(), to: z.string().datetime() }))

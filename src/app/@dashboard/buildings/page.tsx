@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { api } from "~/trpc/server";
@@ -8,10 +9,12 @@ export default async function Buildings() {
   return (
     <ScrollArea>
       {buildings.map((building) => (
-        <div key={building.id} className="text-center px-2">
-          {building.name}
-          <Separator />
-        </div>
+        <Link key={building.id} href={`/buildings/${building.id}`}>
+          <div className="px-2 text-center hover:bg-gray-100">
+            {building.name}
+            <Separator />
+          </div>
+        </Link>
       ))}
     </ScrollArea>
   );

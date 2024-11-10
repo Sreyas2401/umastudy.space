@@ -4,17 +4,15 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import React, { Suspense } from "react";
+import React from "react";
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarProvider,
-  SidebarTrigger,
 } from "~/components/ui/sidebar";
 import DashboardRoutes from "./_components/DashboardRoutes";
 import { Separator } from "~/components/ui/separator";
-import { Skeleton } from "~/components/ui/skeleton";
 
 export const metadata: Metadata = {
   title: "Create T3 App",

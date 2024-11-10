@@ -1,6 +1,8 @@
 import { endOfDay, startOfDay } from "date-fns";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { eventRooms } from "~/server/db/schema";
 
 export const eventRouter = createTRPCRouter({
   getEventsForDate: publicProcedure
@@ -18,5 +20,15 @@ export const eventRouter = createTRPCRouter({
       });
 
       return events;
+    }),
+  getEventRooms: publicProcedure
+    .input(z.number())
+    .query(async ({ ctx, input }) => {
+      const rooms = await ctx.db
+        .select()
+        .from(eventRooms)
+        .where(eq(eventRooms.eventId, input));
+
+      return rooms;
     }),
 });
