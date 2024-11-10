@@ -1,8 +1,7 @@
 'use client'
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import mapboxgl, {GeoJSONFeature, LngLatLike} from 'mapbox-gl';
-
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const globalVar = {
@@ -11,11 +10,16 @@ const globalVar = {
     zoom: 16.2,
     pitch: 60,
     bearing: 35
-  }
+}
 
 function MainMap() {
     const mapRef = useRef<mapboxgl.Map | null>(null);
+    const [selectedBuilding, setSelectedBuilding] = useState<GeoJSONFeature|null>(null);
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        console.log(selectedBuilding?.id); 
+    }, [selectedBuilding]);
 
     useEffect(() => {
         mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2ZWxvcG1lbnQ0dSIsImEiOiJjamZkeGc3Y2M0OXc0MzNwZDl3enRpbzc3In0.S95dVrY6n-TxsdzqG4dvNg';
@@ -35,7 +39,9 @@ function MainMap() {
             const map = mapRef.current;
 
             map.on('style.load', () => {
+                console.log(map.getStyle());
                 if(map.getSource('composite')){
+                    console.log(map.getSource('composite'))
                     map.addLayer({
                         'id': '3d-buildings',
                         'source': 'composite',
@@ -73,6 +79,7 @@ function MainMap() {
 
                 const deselectBuilding = () => {
                     if (!fClick || fClick.id === undefined) return;
+                    setSelectedBuilding(null);
                     map.getCanvasContainer().style.cursor = 'default';
                     map.setFeatureState({
                         source: fClick.source,
@@ -86,6 +93,9 @@ function MainMap() {
                 const selectBuilding = (feature: GeoJSONFeature) => {
                     fClick = feature;
                     if (fClick.id === undefined) return;
+
+                    setSelectedBuilding(fClick);
+
                     map.getCanvasContainer().style.cursor = 'pointer';
 
                     map.setFeatureState({
