@@ -31,28 +31,46 @@ const BuildingMap = () => {
                     'type': 'fill-extrusion',
                     'minzoom': 14,
                     'paint': {
-                      'fill-extrusion-color': [
+                        'fill-extrusion-color': [
                         'case',
-                        ['boolean', ['feature-state', 'hover'], false],
+                        ['boolean', ['feature-state', 'highlight'], false],
                         '#ff4444',
                         '#ddd'
-                      ],
+                        ],
                         'fill-extrusion-height': ['get', 'render_height'],
                         'fill-extrusion-base': ['get', 'render_min_height'],
-                      'fill-extrusion-opacity': 1
+                        'fill-extrusion-opacity': 1
                     }
-                  });
+                });
                 
                 map.current!.on('click', 'building-3d', (e) => {
                     if (e.features && e.features[0]) {
-                        
-                        // Find the corresponding study space
                         const point = e.point;
+
+                        const lng = e.lngLat.lng;
+
+                        const lat = e.lngLat.lat;
+
+                        const buffer = 0.0005;
+
+                        map.current!.removeFeatureState({ source: 'openmaptiles', sourceLayer: 'building' });
+
+                        map.current!.setFilter('building-highlight-3d', [
+                            'all',
+                            ['<=', ['get', 'lat'], lat + buffer],
+                            ['>=', ['get', 'lat'], lat - buffer],
+                            ['<=', ['get', 'lng'], lng + buffer],
+                            ['>=', ['get', 'lng'], lng - buffer]
+                        ]);
+
                         const buildingFeatures = map.current!.queryRenderedFeatures(point, {
                             layers: ['building-highlight-3d']
                         });
 
-                        buildingFeatures.forEach(b => map.current!.setFeatureState({'sourceLayer': b.sourceLayer, 'id': b.id, 'source':b.source}, {'highlight': true}))
+                        console.log(buildingFeatures);
+
+                        buildingFeatures.forEach(b => map.current!.setFeatureState({'sourceLayer': b.sourceLayer, 'id': b.id, 'source':b.source}, {'highlight': true}));
+
                     }
                 });
 
