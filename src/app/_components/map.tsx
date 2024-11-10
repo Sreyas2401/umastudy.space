@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import mapboxgl, {GeoJSONFeature, LngLatLike} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import ControlPanel from './control_panel';
-import { BLDG_IDS, BLDG_PARTS } from '../utils/buildingMap';
+import { useBuildingSelection } from './buildhooks';
 
 const globalVar = {
     origin: [-72.52819, 42.38977, 39],
@@ -16,34 +16,32 @@ const globalVar = {
 
 function MainMap() {
     const mapRef = useRef<mapboxgl.Map | null>(null);
-    const [selectedBuilding, setSelectedBuilding] = useState<GeoJSONFeature|null>(null);
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        console.log(selectedBuilding?.id); 
-    }, [selectedBuilding]);
+    const {
+        selectBuilding,
+        deselectBuilding,
+        selectBuildingById
+    } = useBuildingSelection(mapRef);
 
     useEffect(() => {
         mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2ZWxvcG1lbnQ0dSIsImEiOiJjamZkeGc3Y2M0OXc0MzNwZDl3enRpbzc3In0.S95dVrY6n-TxsdzqG4dvNg';
 
         if (mapContainerRef.current) {
             mapRef.current = new mapboxgl.Map({
-                container: mapContainerRef.current, 
-                style: 'mapbox://styles/mapbox/streets-v12', 
+                container: mapContainerRef.current,
+                style: 'mapbox://styles/mapbox/streets-v12',
                 zoom: globalVar.zoom,
                 pitch: globalVar.pitch,
                 bearing: globalVar.bearing,
-                antialias: true, 
-                hash: true, 
+                antialias: true,
+                hash: true,
                 center: globalVar.center
             });
 
             const map = mapRef.current;
 
             map.on('style.load', () => {
-                console.log(map.getStyle());
                 if(map.getSource('composite')){
-                    console.log(map.getSource('composite'))
                     map.addLayer({
                         'id': '3d-buildings',
                         'source': 'composite',
@@ -64,98 +62,34 @@ function MainMap() {
                     }, 'road-label')
                 }
 
-                let fClick: GeoJSONFeature | null = null;
-
                 map.on('click', (e) => {
-                    let features = map.queryRenderedFeatures(e.point, {
+                    const features = map.queryRenderedFeatures(e.point, {
                         layers: ['3d-buildings']
                     });
 
                     if(features[0]){
-                        deselectBuilding();
                         selectBuilding(features[0]);
-                    }else{
+                    } else {
                         deselectBuilding();
                     }
                 });
-
-                const deselectBuilding = () => {
-                    if (!fClick || fClick.id === undefined) return;
-                    setSelectedBuilding(null);
-                    map.getCanvasContainer().style.cursor = 'default';
-                    const res = BLDG_PARTS[fClick.id];
-
-                    map.getCanvasContainer().style.cursor = 'pointer';
-
-                    if(res && fClick.source){
-                        const other_ids = BLDG_IDS[res];
-
-                        other_ids.forEach(cur_id => map.setFeatureState({
-                            id: cur_id, 
-                            source: fClick!.source, 
-                            sourceLayer: fClick!.sourceLayer
-                        }, {hover: false}))
-
-                    }
-                    else{
-                        map.setFeatureState({
-                            source: fClick.source,
-                            sourceLayer: fClick.sourceLayer,
-                            id: fClick.id
-                        }, {
-                            hover: false
-                        })
-                    };
-                };
-
-                const selectBuilding = (feature: GeoJSONFeature) => {
-                    fClick = feature;
-                    if (fClick.id === undefined) return;
-
-                    setSelectedBuilding(fClick);
-
-                    const res = BLDG_PARTS[fClick.id];
-
-                    map.getCanvasContainer().style.cursor = 'pointer';
-
-                    if(res && fClick.source){
-                        const other_ids = BLDG_IDS[res];
-
-                        other_ids.forEach(cur_id => map.setFeatureState({
-                            id: cur_id, 
-                            source: fClick!.source, 
-                            sourceLayer: fClick?.sourceLayer
-                        }, {hover: true}))
-
-                    }
-
-                    else{
-                        
-
-                        map.setFeatureState({
-                        source: fClick.source,
-                        sourceLayer: fClick.sourceLayer,
-                        id: fClick.id
-                        }, {
-                        hover: true
-                        });
-                    }
-                }
             });
-
         }
 
-    return () => {
-        if (mapRef.current) {
-            mapRef.current.remove();
-        }
-    };
-    }, []);
+        return () => {
+            if (mapRef.current) {
+                mapRef.current.remove();
+            }
+        };
+    }, [selectBuilding, deselectBuilding]);
 
     return (
         <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
             <div id='map-container' ref={mapContainerRef} style={{ height: '100vh', width: '100%' }} />
-            <ControlPanel/>
+            <ControlPanel 
+                onSelectBuilding={selectBuildingById} 
+                onDeselectBuilding={deselectBuilding}
+            />
         </div>
     );
 }

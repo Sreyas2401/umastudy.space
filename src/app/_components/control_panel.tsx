@@ -1,12 +1,33 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import * as React from 'react';
+import { BLDG_IDS, BLDG_PARTS, REVERSED_BLDG_NAMES } from '../utils/buildingMap';
 
+interface ControlPanelProps {
+    onSelectBuilding: (buildingId: string) => void;
+    onDeselectBuilding: () => void;
+}
 
-const ControlPanel = () => {
+const ControlPanel: React.FC<ControlPanelProps> = ({ 
+    onSelectBuilding, 
+    onDeselectBuilding 
+}) => {
 
-    const [buildingName, setBuildingName] = useState();
+    useEffect(() => {
+        console.log(inputText);
+        onDeselectBuilding();
+        const abbr = REVERSED_BLDG_NAMES[inputText]!;
+        const id = BLDG_IDS[abbr];
+        if(id) id.forEach(i => onSelectBuilding(i));
+        return;
+    })
+
+    const [inputText, setInputText] = useState("");
+
+    const inputHandler = (e: { target: { value: React.SetStateAction<string>; }; }) => {
+        setInputText(e.target.value);
+    }
     
     return (
         <div 
@@ -27,6 +48,7 @@ const ControlPanel = () => {
         <input
             type="text"
             placeholder="Search Buildings"
+            onChange={inputHandler}
             style={{
             width: '100%', 
             padding: '10px', 

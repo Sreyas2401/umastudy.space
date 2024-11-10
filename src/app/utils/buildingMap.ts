@@ -196,5 +196,8 @@ export const BLDG_PARTS = Object.keys(BLDG_IDS).reduce(
   {} as Record<string, (typeof BLDG_CODES)[number]>,
 );
 
-const res = BLDG_PARTS['844069509']!;
-console.log(BLDG_IDS[res]);
+export const REVERSED_BLDG_NAMES: Record<string, (typeof BLDG_CODES)[number]> = Object.fromEntries(
+  Object.entries(BLDG_NAMES).map(([code, name]) => [name, code])
+) as Record<string, (typeof BLDG_CODES)[number]>;
+
+
