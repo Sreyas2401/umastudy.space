@@ -1,111 +1,119 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { useRef, useEffect } from 'react';
+import mapboxgl, {GeoJSONFeature, LngLatLike} from 'mapbox-gl';
 
-const BuildingMap = () => {
-    const mapContainer = useRef<HTMLDivElement | null>(null);
-    const map = useRef<maplibregl.Map | null>(null);
-    const [selectedBuilding, setSelectedBuilding] = useState<string | null>(null);
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+const globalVar = {
+    origin: [-72.52819, 42.38977, 39],
+    center: {lng: -72.52819, lat: 42.38977} as LngLatLike,
+    zoom: 16.2,
+    pitch: 60,
+    bearing: 35
+  }
+
+function MainMap() {
+    const mapRef = useRef<mapboxgl.Map | null>(null);
+    const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-        if (map.current === null && mapContainer.current !== null) {
-            map.current = new maplibregl.Map({
-                container: mapContainer.current,
-                style: '/custom_map.json', 
-                center: [-72.52819, 42.38977],
-                zoom: 16,
-                pitch: 45,
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZGV2ZWxvcG1lbnQ0dSIsImEiOiJjamZkeGc3Y2M0OXc0MzNwZDl3enRpbzc3In0.S95dVrY6n-TxsdzqG4dvNg';
+
+        if (mapContainerRef.current) {
+            mapRef.current = new mapboxgl.Map({
+                container: mapContainerRef.current, 
+                style: 'mapbox://styles/mapbox/streets-v12', 
+                zoom: globalVar.zoom,
+                pitch: globalVar.pitch,
+                bearing: globalVar.bearing,
+                antialias: true, 
+                hash: true, 
+                center: globalVar.center
             });
 
-            map.current.on('load', () => {
-                // Add a highlight layer that uses the same source as your building-3d layer
-                
-                map.current!.addLayer({
-                    'id': 'building-highlight-3d',
-                    'source': 'openmaptiles',
-                    'source-layer': 'building',
-                    'type': 'fill-extrusion',
-                    'minzoom': 14,
-                    'paint': {
-                        'fill-extrusion-color': [
-                        'case',
-                        ['boolean', ['feature-state', 'highlight'], false],
-                        '#ff4444',
-                        '#ddd'
-                        ],
-                        'fill-extrusion-height': ['get', 'render_height'],
-                        'fill-extrusion-base': ['get', 'render_min_height'],
-                        'fill-extrusion-opacity': 1
-                    }
-                });
-                
-                map.current!.on('click', 'building-3d', (e) => {
-                    if (e.features && e.features[0]) {
-                        const point = e.point;
+            const map = mapRef.current;
 
-                        const lng = e.lngLat.lng;
+            map.on('style.load', () => {
+                if(map.getSource('composite')){
+                    map.addLayer({
+                        'id': '3d-buildings',
+                        'source': 'composite',
+                        'source-layer': 'building',
+                        'type': 'fill-extrusion',
+                        'minzoom': 14,
+                        'paint': {
+                            'fill-extrusion-color': [
+                                'case',
+                                ['boolean', ['feature-state', 'hover'], false],
+                                '#ff0000',
+                                '#ddd'
+                            ],
+                            'fill-extrusion-height': ["number", ["get", "height"], 5],
+                            'fill-extrusion-base': ["number", ["get", "min_height"], 0],
+                            'fill-extrusion-opacity': 1
+                        }
+                    }, 'road-label')
+                }
 
-                        const lat = e.lngLat.lat;
+                let fClick: GeoJSONFeature | null = null;
 
-                        const buffer = 0.0005;
+                map.on('click', (e) => {
+                    let features = map.queryRenderedFeatures(e.point, {
+                        layers: ['3d-buildings']
+                    });
 
-                        map.current!.removeFeatureState({ source: 'openmaptiles', sourceLayer: 'building' });
-
-                        map.current!.setFilter('building-highlight-3d', [
-                            'all',
-                            ['<=', ['get', 'lat'], lat + buffer],
-                            ['>=', ['get', 'lat'], lat - buffer],
-                            ['<=', ['get', 'lng'], lng + buffer],
-                            ['>=', ['get', 'lng'], lng - buffer]
-                        ]);
-
-                        const buildingFeatures = map.current!.queryRenderedFeatures(point, {
-                            layers: ['building-highlight-3d']
-                        });
-
-                        console.log(buildingFeatures);
-
-                        buildingFeatures.forEach(b => map.current!.setFeatureState({'sourceLayer': b.sourceLayer, 'id': b.id, 'source':b.source}, {'highlight': true}));
-
+                    if(features[0]){
+                        deselectBuilding();
+                        selectBuilding(features[0]);
+                    }else{
+                        deselectBuilding();
                     }
                 });
 
-                // Cursor handling
-                ['studyspaces', 'building-3d'].forEach((layerId) => {
-                    map.current!.on('mouseenter', layerId, () => {
-                        map.current!.getCanvas().style.cursor = 'pointer';
+                const deselectBuilding = () => {
+                    if (!fClick || fClick.id === undefined) return;
+                    map.getCanvasContainer().style.cursor = 'default';
+                    map.setFeatureState({
+                        source: fClick.source,
+                        sourceLayer: fClick.sourceLayer,
+                        id: fClick.id
+                    }, {
+                        hover: false
                     });
+                };
 
-                    map.current!.on('mouseleave', layerId, () => {
-                        map.current!.getCanvas().style.cursor = '';
+                const selectBuilding = (feature: GeoJSONFeature) => {
+                    fClick = feature;
+                    if (fClick.id === undefined) return;
+                    map.getCanvasContainer().style.cursor = 'pointer';
+
+                    map.setFeatureState({
+                    source: fClick.source,
+                    sourceLayer: fClick.sourceLayer,
+                    id: fClick.id
+                    }, {
+                    hover: true
                     });
-                });
+                }
             });
+
         }
 
-        return () => {
-            if (map.current) {
-                map.current.remove();
-                map.current = null;
-            }
-        };
+
+
+    return () => {
+        if (mapRef.current) {
+            mapRef.current.remove();
+        }
+    };
     }, []);
 
     return (
-        <div className="w-full h-screen relative">
-            <div ref={mapContainer} className="w-full h-full" />
-            {selectedBuilding && (
-                <div className="absolute top-4 left-4 bg-white p-4 rounded shadow">
-                    <h3 className="font-medium">Selected Building:</h3>
-                    <p>{selectedBuilding}</p>
-                </div>
-            )}
-        </div>
+        <>
+            <div id='map-container' ref={mapContainerRef} style={{ height: '100vh', width: '100%' }} />
+        </>
     );
-};
+}
 
-export default BuildingMap;
+export default MainMap;
