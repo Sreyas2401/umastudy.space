@@ -2,6 +2,7 @@ import { useRef, useCallback, useState } from "react";
 import { type GeoJSONFeature } from "mapbox-gl";
 import { BLDG_PARTS, BLDG_IDS, REVERSED_BLDG_NAMES } from "../utils/buildingMap";
 import BUILD_COORDS from "../../../public/building_coords";
+import { BLDG_CODES, BLDG_NAMES } from "scripts/common";
 
 export const useBuildingSelection = (
   mapRef: React.MutableRefObject<mapboxgl.Map | null>,
@@ -92,9 +93,28 @@ export const useBuildingSelection = (
   
       selectBuilding(feature);
 
+      const abbr = BLDG_PARTS[buildingId]!
+
+      const ff = BLDG_NAMES[abbr];
+
+      const cur_coords = BUILD_COORDS.features.find(
+        (f) => f.properties.name === ff
+      )?.geometry.coordinates;
+
+      if(cur_coords!=undefined){
+        console.log(ff+':'+cur_coords);
+        onSelectCity({latitude: cur_coords[1]!, longitude: cur_coords[0]!});
+      }
+
+      
+
     },
     [selectBuilding, mapRef]
   );
+  
+  const onSelectCity = useCallback(({longitude, latitude}: { longitude: number; latitude: number; }) => {
+    mapRef.current?.flyTo({center: [longitude, latitude], duration: 2000, pitch: 60, bearing: 35, zoom: 16.5});
+  }, []);
   
 
   return {
