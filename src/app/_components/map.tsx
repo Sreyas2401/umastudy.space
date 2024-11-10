@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import mapboxgl, {GeoJSONFeature, LngLatLike} from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import ControlPanel from './control_panel';
+import { BLDG_IDS, BLDG_PARTS } from '../utils/buildingMap';
 
 const globalVar = {
     origin: [-72.52819, 42.38977, 39],
@@ -82,13 +83,29 @@ function MainMap() {
                     if (!fClick || fClick.id === undefined) return;
                     setSelectedBuilding(null);
                     map.getCanvasContainer().style.cursor = 'default';
-                    map.setFeatureState({
-                        source: fClick.source,
-                        sourceLayer: fClick.sourceLayer,
-                        id: fClick.id
-                    }, {
-                        hover: false
-                    });
+                    const res = BLDG_PARTS[fClick.id];
+
+                    map.getCanvasContainer().style.cursor = 'pointer';
+
+                    if(res && fClick.source){
+                        const other_ids = BLDG_IDS[res];
+
+                        other_ids.forEach(cur_id => map.setFeatureState({
+                            id: cur_id, 
+                            source: fClick!.source, 
+                            sourceLayer: fClick!.sourceLayer
+                        }, {hover: false}))
+
+                    }
+                    else{
+                        map.setFeatureState({
+                            source: fClick.source,
+                            sourceLayer: fClick.sourceLayer,
+                            id: fClick.id
+                        }, {
+                            hover: false
+                        })
+                    };
                 };
 
                 const selectBuilding = (feature: GeoJSONFeature) => {
@@ -97,15 +114,32 @@ function MainMap() {
 
                     setSelectedBuilding(fClick);
 
+                    const res = BLDG_PARTS[fClick.id];
+
                     map.getCanvasContainer().style.cursor = 'pointer';
 
-                    map.setFeatureState({
-                    source: fClick.source,
-                    sourceLayer: fClick.sourceLayer,
-                    id: fClick.id
-                    }, {
-                    hover: true
-                    });
+                    if(res && fClick.source){
+                        const other_ids = BLDG_IDS[res];
+
+                        other_ids.forEach(cur_id => map.setFeatureState({
+                            id: cur_id, 
+                            source: fClick!.source, 
+                            sourceLayer: fClick?.sourceLayer
+                        }, {hover: true}))
+
+                    }
+
+                    else{
+                        
+
+                        map.setFeatureState({
+                        source: fClick.source,
+                        sourceLayer: fClick.sourceLayer,
+                        id: fClick.id
+                        }, {
+                        hover: true
+                        });
+                    }
                 }
             });
 

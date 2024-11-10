@@ -124,7 +124,7 @@ export const BLDG_NAMES: Record<(typeof BLDG_CODES)[number], string> = {
   FLIN: "Flint Laboratory",
 };
 
-export const BLDG_IDS = {
+export const BLDG_IDS: Record<(typeof BLDG_CODES)[number], string[]> = {
   LIB: ["40694454", "4054634"],
   SC: ["495323096"],
   THOM: ["147156729", "679153640"],
@@ -166,13 +166,35 @@ export const BLDG_IDS = {
   MOR: ["217243924"],
   HAS: ["110428293"],
   ILC: ["292876549"],
+  ARND: [],
+  BOYD: [],
+  FURC: [],
+  HILS: [],
+  JAME: [],
+  BCA: [],
+  BFLD: [],
+  CROT: [],
+  DKSN: [],
+  ECSC: [],
+  EMLY: [],
+  FREN: [],
+  FERN: [],
+  GORD: [],
+  GORM: [],
+  MARX: [],
+  NAH: [],
+  SKIN: [],
+  STK: []
 };
 
 export const BLDG_PARTS = Object.keys(BLDG_IDS).reduce(
   (acc, bldg) => {
-    BLDG_IDS[bldg as keyof typeof BLDG_IDS]!.forEach((id) => (acc[id] = bldg as keyof typeof BLDG_CODES));
+    BLDG_IDS[bldg as keyof typeof BLDG_IDS]!.forEach((id) => (acc[id] = bldg as (typeof BLDG_CODES)[number]));
 
     return acc;
   },
-  {} as Record<string, keyof typeof BLDG_CODES>,
+  {} as Record<string, (typeof BLDG_CODES)[number]>,
 );
+
+const res = BLDG_PARTS['844069509']!;
+console.log(BLDG_IDS[res]);
